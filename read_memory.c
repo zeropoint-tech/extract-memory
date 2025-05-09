@@ -48,10 +48,10 @@ categorize_entry(Maps_entry *map) {
     }
 }
 
-void
+int
 wr_maps_entry_to_file(int pid, Maps_entry *map, FILE *bin_out, FILE *type_out) {
     char mem_file_name[100], path_pagemap[0x100], *buf;
-    int status, i, c, num_read_pages, mem_fd;
+    int i, c, num_read_pages, mem_fd, status = 0;
     uint64_t file_offset, read_val;
     FILE *file_pagemap;
     unsigned long long addr;
@@ -63,7 +63,7 @@ wr_maps_entry_to_file(int pid, Maps_entry *map, FILE *bin_out, FILE *type_out) {
 
     if (!file_pagemap) {
         printf("Error! Cannot open %s\n", path_pagemap);
-        return;
+        return ENOENT;
     }
 
     for (addr = map->start_addr; addr < map->end_addr; addr += PAGE_SIZE) {
@@ -73,7 +73,7 @@ wr_maps_entry_to_file(int pid, Maps_entry *map, FILE *bin_out, FILE *type_out) {
 
         if (status) {
             printf("Failed to do fseek!\n");
-            return;
+            return EIO;
         }
 
         errno = 0;
@@ -148,6 +148,8 @@ wr_maps_entry_to_file(int pid, Maps_entry *map, FILE *bin_out, FILE *type_out) {
     printf("name:%s  shared:%c pages:%d type:%d execute:%c\n", map->pathname,
            map->shared_private, map->present_pages, map->entry_type,
            map->execute);
+
+    return status;
 }
 
 void
@@ -219,7 +221,7 @@ valid_entry(Maps_entry *map) {
     }
 }
 
-void
+int
 read_maps_file(int pid, FILE *file_bin_out, FILE *file_maps_out, FILE *type_out) {
 
     char path_maps[100], start_addr[0x100], end_addr[0x100], *curr_addr,
@@ -235,7 +237,7 @@ read_maps_file(int pid, FILE *file_bin_out, FILE *file_maps_out, FILE *type_out)
 
     if (file_maps == NULL) {
         printf("could not open file: %s\n", path_maps);
-        return;
+        return ENOENT;
     }
 
     /* Count rows/entries in the maps file */
@@ -352,4 +354,6 @@ read_maps_file(int pid, FILE *file_bin_out, FILE *file_maps_out, FILE *type_out)
            num_other_pages, num_filemapped_pages);
 
     free(maps_arr);
+
+    return 0;
 }

@@ -37,10 +37,10 @@ typedef struct {
 } Maps_entry;
 
 void categorize_entry(Maps_entry *map);
-void wr_maps_entry_to_file(int pid, Maps_entry *map, FILE *bin_out, FILE *type_out);
+int wr_maps_entry_to_file(int pid, Maps_entry *map, FILE *bin_out, FILE *type_out);
 void get_present_pages(int pid, Maps_entry *map);
 void valid_entry(Maps_entry *map);
 void print_maps_entry(Maps_entry *maps_entry);
-void read_maps_file(int pid, FILE *file_bin_out, FILE *file_maps_out, FILE *file_type_out);
+int read_maps_file(int pid, FILE *file_bin_out, FILE *file_maps_out, FILE *file_type_out);
 
 #endif
