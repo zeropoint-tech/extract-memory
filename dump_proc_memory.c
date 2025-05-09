@@ -1,10 +1,14 @@
 #include "read_memory.h"
 #include <asm-generic/errno-base.h>
+#include <fcntl.h>
 #include <regex.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
 #define MAX_LEN_CMDLINE 75
+#define MAX_FILE_NAME_LEN 100
+#define MAX_OPEN_FILES 4
 
 void usage() {
   printf("Usage: ./memdump <pid> <path>\n");
@@ -20,10 +24,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  char path_proc_cmd[100];
-  char path_maps_file_out[100] = "";
-  char path_type_file_out[100] = "";
-  int ch, max_ch_cmd_line, status;
+  int ch, max_ch_cmd_line, status = 0;
   FILE *file_proc_cmd, *file_bin_out, *file_maps_out, *file_type_out;
 
   char *bin_file = argv[2];
@@ -35,6 +36,8 @@ int main(int argc, char **argv) {
 
   file_bin_out = fopen(bin_file, "wb");
 
+  char path_maps_file_out[MAX_FILE_NAME_LEN] = "";
+  char path_type_file_out[MAX_FILE_NAME_LEN] = "";
   for (int i = 0; i < strlen(bin_file) - 4; i++) {
     path_maps_file_out[i] = bin_file[i];
     path_type_file_out[i] = bin_file[i];
@@ -46,12 +49,14 @@ int main(int argc, char **argv) {
   strcat(path_type_file_out, "_type.txt");
   file_type_out = fopen(path_type_file_out, "w");
 
+  char path_proc_cmd[MAX_FILE_NAME_LEN];
   sprintf(path_proc_cmd, "/proc/%u/cmdline", pid);
   file_proc_cmd = fopen(path_proc_cmd, "r");
 
   if (file_proc_cmd == NULL) {
     printf("Error: opening the /proc/pid/cmdline file for PID %d.\n", pid);
-    return ENOENT;
+    status = ENOENT;
+    goto tear_down;
   }
 
   max_ch_cmd_line = MAX_LEN_CMDLINE;
@@ -68,6 +73,8 @@ int main(int argc, char **argv) {
 
   status = read_maps_file(pid, file_bin_out, file_maps_out, file_type_out);
 
+tear_down:
+  fclose(file_maps_out);
   fclose(file_type_out);
   fclose(file_bin_out);
 

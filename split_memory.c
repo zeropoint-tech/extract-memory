@@ -1,9 +1,11 @@
 #include "read_memory.h"
 #include "stdio.h"
+#include <asm-generic/errno-base.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
-#define MAX_LEN_CMDLINE 75
+#define MAX_FILE_NAME_LEN 100
 
 uint64_t get_file_size(FILE *f) {
   uint64_t size;
@@ -19,7 +21,8 @@ int split_binary(FILE *file_bin_in, FILE *file_type_in,
                  FILE *file_anon_out, FILE *file_library_out,
                  FILE *file_stack_out, FILE *file_other_out) {
 
-  uint64_t size_type, size_bin, i;
+  int status = 0;
+  uint64_t size_type, size_bin;
   uint64_t num_type_pages, num_bin_pages;
 
   size_type = get_file_size(file_type_in);
@@ -40,7 +43,7 @@ int split_binary(FILE *file_bin_in, FILE *file_type_in,
   entry_type *types = malloc(num_type_pages * sizeof(entry_type));
   entry_type tmp;
 
-  i = 0;
+  unsigned i = 0;
 
   while (fread(&tmp, 1, sizeof(entry_type), file_type_in) ==
          sizeof(entry_type)) {
@@ -73,6 +76,7 @@ int split_binary(FILE *file_bin_in, FILE *file_type_in,
       break;
     default:
       printf("ERROR: Unknown type %d!\n", types[i]);
+      status = EXIT_FAILURE;
       assert(0);
     }
 
@@ -82,7 +86,7 @@ int split_binary(FILE *file_bin_in, FILE *file_type_in,
   free(page_buffer);
   free(types);
 
-  return 0;
+  return status;
 }
 
 void usage() {
@@ -94,14 +98,16 @@ void usage() {
 int main(int argc, char **argv) {
   // argv[1] - path to binary input file (original dump file with all data)
 
-  char path_type_file_in[100] = "";
+  int status = 0;
 
-  char path_filemapped_out[100] = "";
-  char path_heap_out[100] = "";
-  char path_anon_out[100] = "";
-  char path_library_out[100] = "";
-  char path_stack_out[100] = "";
-  char path_other_out[100] = "";
+  char path_type_file_in[MAX_FILE_NAME_LEN] = "";
+
+  char path_filemapped_out[MAX_FILE_NAME_LEN] = "";
+  char path_heap_out[MAX_FILE_NAME_LEN] = "";
+  char path_anon_out[MAX_FILE_NAME_LEN] = "";
+  char path_library_out[MAX_FILE_NAME_LEN] = "";
+  char path_stack_out[MAX_FILE_NAME_LEN] = "";
+  char path_other_out[MAX_FILE_NAME_LEN] = "";
 
   FILE *file_bin_in;
   FILE *file_type_in;
@@ -130,46 +136,52 @@ int main(int argc, char **argv) {
   file_bin_in = fopen(argv[1], "rb");
   if (file_bin_in == NULL) {
     printf("ERROR reading file %s\n", argv[1]);
-    return 1;
+    status = ENOENT;
+    goto tear_down_file_bin_in;
   }
 
   strcat(path_type_file_in, "_type.txt");
   file_type_in = fopen(path_type_file_in, "rb");
   if (file_type_in == NULL) {
     printf("ERROR reading file %s\n", path_type_file_in);
-    return 1;
+    status = ENOENT;
+    goto tear_down_file_type_in;
   }
 
   strcat(path_filemapped_out, "_filemapped.bin");
   remove(path_filemapped_out);
   file_filemapped_out = fopen(path_filemapped_out, "ab");
   if (file_filemapped_out == NULL) {
-    printf("ERROR reading file %s\n", path_filemapped_out);
-    return 1;
+    printf("ERROR writing to file %s\n", path_filemapped_out);
+    status = ENOENT;
+    goto tear_down_file_filemapped_out;
   }
 
   strcat(path_heap_out, "_heap.bin");
   remove(path_heap_out);
   file_heap_out = fopen(path_heap_out, "ab");
   if (file_heap_out == NULL) {
-    printf("ERROR reading file %s\n", path_heap_out);
-    return 1;
+    printf("ERROR writing to file %s\n", path_heap_out);
+    status = ENOENT;
+    goto tear_down_file_heap_out;
   }
 
   strcat(path_anon_out, "_anon.bin");
   remove(path_anon_out);
   file_anon_out = fopen(path_anon_out, "ab");
   if (file_anon_out == NULL) {
-    printf("ERROR reading file %s\n", path_anon_out);
-    return 1;
+    printf("ERROR writing to file %s\n", path_anon_out);
+    status = ENOENT;
+    goto tear_down_file_anon_out;
   }
 
   strcat(path_library_out, "_library.bin");
   remove(path_library_out);
   file_library_out = fopen(path_library_out, "ab");
   if (file_library_out == NULL) {
-    printf("ERROR reading file %s\n", path_library_out);
-    return 1;
+    printf("ERROR writing to file %s\n", path_library_out);
+    status = ENOENT;
+    goto tear_down_file_library_out;
   }
 
   strcat(path_stack_out, "_stack.bin");
@@ -177,7 +189,8 @@ int main(int argc, char **argv) {
   file_stack_out = fopen(path_stack_out, "ab");
   if (file_stack_out == NULL) {
     printf("ERROR reading file %s\n", path_stack_out);
-    return 1;
+    status = ENOENT;
+    goto tear_down_file_stack_out;
   }
 
   strcat(path_other_out, "_other.bin");
@@ -185,19 +198,28 @@ int main(int argc, char **argv) {
   file_other_out = fopen(path_other_out, "ab");
   if (file_other_out == NULL) {
     printf("ERROR reading file %s\n", path_other_out);
-    return 1;
+    status = ENOENT;
+    goto tear_down_file_other_out;
   }
 
   split_binary(file_bin_in, file_type_in, file_filemapped_out, file_heap_out,
                file_anon_out, file_library_out, file_stack_out, file_other_out);
 
+tear_down_file_bin_in:
   fclose(file_bin_in);
+tear_down_file_type_in:
   fclose(file_type_in);
+tear_down_file_filemapped_out:
   fclose(file_filemapped_out);
+tear_down_file_heap_out:
   fclose(file_heap_out);
+tear_down_file_anon_out:
   fclose(file_anon_out);
+tear_down_file_library_out:
   fclose(file_library_out);
+tear_down_file_stack_out:
   fclose(file_stack_out);
+tear_down_file_other_out:
   fclose(file_other_out);
 
   return 0;

@@ -1,12 +1,12 @@
 # Memory dumper
 
-This small tool takes a snapshot of the memory allocated for a specific process
-(PID) and dumps it into a binary file. Optionally the file can be split into
-separate binary files per each memory type.
+This tool takes a snapshot of the memory allocated for a process, given its PID
+and dumps it into a binary file. Optionally the file can be split into separate
+binary files per each memory type.
 
 ## Memdumper
 
-The main application is compiled from `dump_proc_memory.c`, which takes only 2
+The main application is compiled from `dump_proc_memory.c`, which takes 2
 arguments:
 
 - The PID of the application to dump memory from
