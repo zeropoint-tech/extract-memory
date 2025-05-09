@@ -1,11 +1,17 @@
-split_memdump: split_memory.c
-	gcc -Wall -static -o split_memdump split_memory.c read_memory.c
+CC = gcc
+CFLAGS = -static
 
-dump_proc_memory: dump_proc_memory.c
-	gcc -Wall -static -o memdump dump_proc_memory.c read_memory.c
+TARGETS = memdump split_memdump
+memdump_SRCS = dump_proc_memory.c read_memory.c
+split_memdump_SRCS = split_memory.c read_memory.c
 
-all: dump_proc_memory.c
-	gcc -Wall -static -o memdump dump_proc_memory.c read_memory.c
+all: $(TARGETS)
+
+memdump: $(memdump_SRCS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+split_memdump: $(split_memdump_SRCS)
+	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	rm memdump
+	rm -f $(TARGETS)
