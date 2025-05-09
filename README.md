@@ -1,8 +1,8 @@
 # Memory dumper
 
-This tool takes a snapshot of the memory allocated for a process, given its PID
-and dumps it into a binary file. Optionally the file can be split into separate
-binary files per each memory type.
+This tool takes a snapshot of the memory of a process, given its PID, and dumps
+it into a binary file. Optionally the file can be split into separate binary
+files per each memory type.
 
 ## Memdumper
 
@@ -39,4 +39,3 @@ make
 
 The resulting files are raw memory dumps of all memory that is accessible from
 the given process.
-
