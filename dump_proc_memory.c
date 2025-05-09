@@ -1,10 +1,5 @@
 #include "read_memory.h"
-#include <asm-generic/errno-base.h>
-#include <fcntl.h>
-#include <regex.h>
-#include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 
 #define MAX_LEN_CMDLINE 75
 #define MAX_FILE_NAME_LEN 100
