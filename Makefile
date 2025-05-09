@@ -7,8 +7,6 @@ split_memdump_SRCS = split_memory.c read_memory.c
 
 all: $(TARGETS)
 
-# $(TARGETS): $($(basename $@)_SRCS)
-# 	$(CC) $(CFLAGS) -o $@ $($(basename $@)_SRCS)
 memdump: $(memdump_SRCS)
 	$(CC) $(CFLAGS) -o $@ $^
 
