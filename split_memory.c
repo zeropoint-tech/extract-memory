@@ -222,5 +222,5 @@ tear_down_file_stack_out:
 tear_down_file_other_out:
   fclose(file_other_out);
 
-  return 0;
+  return status;
 }
