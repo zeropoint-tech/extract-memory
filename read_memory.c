@@ -139,38 +139,7 @@ wr_maps_entry_to_file(int pid, Maps_entry *map, FILE *bin_out, FILE *type_out) {
 
             close(mem_fd);
 
-            /* CAN BE USED TO COMPATE THE MEMORY TO THE /dev/mem file
-             * the dd command is very slow
-             */
-
-            // read from /dev/mem
-            // mem_fd = open("/dev/mem", O_RDONLY);
-            // lseek(mem_fd, GET_PFN(read_val)*PAGE_SIZE, SEEK_SET);
-            // read(mem_fd, buf2, PAGE_SIZE);
-            // write the page to the output file
-            // fwrite(buf2, PAGE_SIZE, 1, bin_out2);
-            // free(buf2);
-
-            // sprintf(str_dd_cmd, "su -c \"dd if=/dev/mem of=/data/page.bin
-            //   bs=PAGE_SIZE count=1 skip=%llu 2> /dev/null\"",
-            //   GET_PFN(read_val));
-            // ret = system(str_dd_cmd);
-            // printf("%d\n", ret);
-            // mem_page = open("/data/page.bin", O_RDONLY);
-            // read(mem_page, buf2, PAGE_SIZE);
-            // close(mem_page);
-
-            // if (memcmp(buf, buf2, PAGE_SIZE)) {
-            //     printf("miss <%d::%llx::%llx::%d>\n", pid,
-            //           GET_PFN(read_val), addr, num_read_pages);
-            // } else {
-            //     printf("hit <%d::%llx::%llx::%d>\n", pid,
-            //           GET_PFN(read_val), addr, num_read_pages);
-            // }
-            // fwrite(buf2, PAGE_SIZE, 1, bin_out2);
-
             free(buf);
-            // free(buf2);
         }
     }
     fclose(file_pagemap);

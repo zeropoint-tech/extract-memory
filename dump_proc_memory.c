@@ -4,7 +4,7 @@
 #define MAX_LEN_CMDLINE 75
 
 int
-main(int argc, unsigned char **argv) {
+main(int argc, char **argv) {
     /* argv[1] - pid of process to memory dump
      * argv[2] - path to binary output file (dump file)
      * the application will print data (can/should be redirected to txt file)

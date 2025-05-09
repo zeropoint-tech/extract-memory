@@ -1,4 +1,4 @@
-#include "../extract_memory/read_memory.h"
+#include "read_memory.h"
 #include "stdio.h"
 #include <assert.h>
 #include <string.h>
