@@ -104,6 +104,8 @@ main(int argc, char **argv) {
     char path_stack_out[100] = "";
     char path_other_out[100] = "";
 
+    int status = 0;
+
     FILE *file_bin_in;
     FILE *file_type_in;
     FILE *file_filemapped_out;
@@ -131,14 +133,16 @@ main(int argc, char **argv) {
     file_bin_in = fopen(argv[1], "rb");
     if (file_bin_in == NULL) {
         printf("ERROR reading file %s\n", argv[1]);
-        return 1;
+        status = ENOENT;
+        goto tear_down_file_bin_in;
     }
 
     strcat(path_type_file_in, "_type.txt");
     file_type_in = fopen(path_type_file_in, "rb");
     if (file_type_in == NULL) {
         printf("ERROR reading file %s\n", path_type_file_in);
-        return 1;
+        status = ENOENT;
+        goto tear_down_file_type_in;
     }
 
     strcat(path_filemapped_out, "_filemapped.bin");
@@ -146,7 +150,8 @@ main(int argc, char **argv) {
     file_filemapped_out = fopen(path_filemapped_out, "ab");
     if (file_filemapped_out == NULL) {
         printf("ERROR reading file %s\n", path_filemapped_out);
-        return 1;
+        status = ENOENT;
+        goto tear_down_file_filemapped_out;
     }
 
     strcat(path_heap_out, "_heap.bin");
@@ -154,7 +159,8 @@ main(int argc, char **argv) {
     file_heap_out = fopen(path_heap_out, "ab");
     if (file_heap_out == NULL) {
         printf("ERROR reading file %s\n", path_heap_out);
-        return 1;
+        status = ENOENT;
+        goto tear_down_file_heap_out;
     }
 
     strcat(path_anon_out, "_anon.bin");
@@ -162,7 +168,8 @@ main(int argc, char **argv) {
     file_anon_out = fopen(path_anon_out, "ab");
     if (file_anon_out == NULL) {
         printf("ERROR reading file %s\n", path_anon_out);
-        return 1;
+        status = ENOENT;
+        goto tear_down_file_anon_out;
     }
 
     strcat(path_library_out, "_library.bin");
@@ -170,7 +177,8 @@ main(int argc, char **argv) {
     file_library_out = fopen(path_library_out, "ab");
     if (file_library_out == NULL) {
         printf("ERROR reading file %s\n", path_library_out);
-        return 1;
+        status = ENOENT;
+        goto tear_down_file_library_out;
     }
 
     strcat(path_stack_out, "_stack.bin");
@@ -178,7 +186,8 @@ main(int argc, char **argv) {
     file_stack_out = fopen(path_stack_out, "ab");
     if (file_stack_out == NULL) {
         printf("ERROR reading file %s\n", path_stack_out);
-        return 1;
+        status = ENOENT;
+        goto tear_down_file_stack_out;
     }
 
     strcat(path_other_out, "_other.bin");
@@ -186,21 +195,30 @@ main(int argc, char **argv) {
     file_other_out = fopen(path_other_out, "ab");
     if (file_other_out == NULL) {
         printf("ERROR reading file %s\n", path_other_out);
-        return 1;
+        status = ENOENT;
+        goto tear_down_file_other_out;
     }
 
     split_binary(file_bin_in, file_type_in, file_filemapped_out, file_heap_out,
                  file_anon_out, file_library_out, file_stack_out,
                  file_other_out);
 
+tear_down_file_bin_in:
     fclose(file_bin_in);
+tear_down_file_type_in:
     fclose(file_type_in);
+tear_down_file_filemapped_out:
     fclose(file_filemapped_out);
+tear_down_file_heap_out:
     fclose(file_heap_out);
+tear_down_file_anon_out:
     fclose(file_anon_out);
+tear_down_file_library_out:
     fclose(file_library_out);
+tear_down_file_stack_out:
     fclose(file_stack_out);
+tear_down_file_other_out:
     fclose(file_other_out);
 
-    return 0;
+    return status;
 }

@@ -18,7 +18,7 @@ main(int argc, char **argv) {
     char ch, path_proc_cmd[100];
     char path_maps_file_out[100] = "";
     char path_type_file_out[100] = "";
-    int pid, max_ch_cmd_line;
+    int pid, max_ch_cmd_line, status = 0;
     FILE *file_proc_cmd, *file_bin_out, *file_maps_out, *file_type_out;
 
     /* delete previous binary dump file */
@@ -43,7 +43,8 @@ main(int argc, char **argv) {
 
     if (file_proc_cmd == NULL) {
         printf("Error: opening the /proc/pid/cmdline file.\n");
-        return 1;
+        status = ENOENT;
+        goto tear_down;
     }
 
     max_ch_cmd_line = MAX_LEN_CMDLINE;
@@ -58,9 +59,12 @@ main(int argc, char **argv) {
 
     fclose(file_proc_cmd);
 
-    read_maps_file(pid, file_bin_out, file_maps_out, file_type_out);
+    status = read_maps_file(pid, file_bin_out, file_maps_out, file_type_out);
 
+tear_down:
+    fclose(file_maps_out);
     fclose(file_type_out);
     fclose(file_bin_out);
-    return 0;
+
+    return status;
 }
