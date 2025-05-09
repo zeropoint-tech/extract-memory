@@ -8,7 +8,6 @@
 
 #define MAX_LEN_CMDLINE 75
 #define MAX_FILE_NAME_LEN 100
-#define MAX_OPEN_FILES 4
 
 void usage() {
   printf("Usage: ./memdump <pid> <path>\n");
