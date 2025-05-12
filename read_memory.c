@@ -1,4 +1,5 @@
 #include "read_memory.h"
+#include <assert.h>
 #include <string.h>
 
 const int __endian_bit = 1;
@@ -334,19 +335,31 @@ read_maps_file(int pid, FILE *file_bin_out, FILE *file_maps_out, FILE *type_out)
     num_filemapped_pages = 0;
 
     for (i = 0; i < maps_entries; i++) {
-        if (maps_arr[i].valid && maps_arr[i].entry_type == HEAP) {
-            num_heap_pages += maps_arr[i].present_pages;
-        } else if (maps_arr[i].valid && maps_arr[i].entry_type == ANON) {
-            num_anon_pages += maps_arr[i].present_pages;
-        } else if (maps_arr[i].valid && maps_arr[i].entry_type == STACK) {
-            num_stack_pages += maps_arr[i].present_pages;
-        } else if (maps_arr[i].valid && maps_arr[i].entry_type == LIBRARY) {
-            num_library_pages += maps_arr[i].present_pages;
-        } else if (maps_arr[i].valid && maps_arr[i].entry_type == OTHER) {
-            num_other_pages += maps_arr[i].present_pages;
-        } else if (maps_arr[i].valid && maps_arr[i].entry_type == FILEMAPPED) {
-            num_filemapped_pages += maps_arr[i].present_pages;
+      if (maps_arr[i].valid) {
+        switch (maps_arr[i].entry_type) {
+        case HEAP:
+          num_heap_pages += maps_arr[i].present_pages;
+          break;
+        case ANON:
+          num_anon_pages += maps_arr[i].present_pages;
+          break;
+        case LIBRARY:
+          num_library_pages += maps_arr[i].present_pages;
+          break;
+        case STACK:
+          num_stack_pages += maps_arr[i].present_pages;
+          break;
+        case OTHER:
+          num_other_pages += maps_arr[i].present_pages;
+          break;
+        case FILEMAPPED:
+          num_filemapped_pages += maps_arr[i].present_pages;
+          break;
+        default:
+          printf("ERROR: Unknown type %d!\n", maps_arr[i].present_pages);
+          assert(0);
         }
+      }
     }
 
     printf("pid: %d heap: %d anon: %d stack: %d lib: %d other: %d filemapped: %d\n", pid,
